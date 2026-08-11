@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kohinoor — Distributor Registration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B2B22;
+    --deep-green:#173A2C;
+    --sage-bg:#EEF2EA;
+    --card:#FFFFFF;
+    --gold:#B4863A;
+    --gold-soft:#E7D5AF;
+    --line:#DCE3D8;
+    --error:#B3402F;
+    --success:#3E7150;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--sage-bg);
+    background-image: radial-gradient(circle at 12% 8%, #E4EBE0 0%, var(--sage-bg) 45%);
+    font-family:'Work Sans', sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:48px 16px;
+  }
+  .wrap{
+    width:100%;
+    max-width:480px;
+  }
+  .brandmark{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:22px;
+  }
+  .brandmark .seal{
+    width:36px;height:36px;border-radius:50%;
+    background:var(--deep-green);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--gold-soft);
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:17px;
+    flex-shrink:0;
+  }
+  .brandmark .name{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:20px;
+    letter-spacing:0.02em;
+    color:var(--deep-green);
+  }
+  .brandmark .name span{
+    display:block;
+    font-family:'Work Sans', sans-serif;
+    font-weight:500;
+    font-size:11px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--gold);
+    margin-top:1px;
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:34px 30px 28px;
+    box-shadow:0 1px 2px rgba(23,58,44,0.04), 0 12px 32px -18px rgba(23,58,44,0.25);
+  }
+  .card h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:24px;
+    margin:0 0 4px;
+    color:var(--deep-green);
+  }
+  .card p.sub{
+    margin:0 0 26px;
+    font-size:13.5px;
+    color:#5A6B5E;
+  }
+  .field{
+    margin-bottom:16px;
+    position:relative;
+  }
+  .field label{
+    display:block;
+    font-size:12.5px;
+    font-weight:600;
+    letter-spacing:0.02em;
+    color:var(--deep-green);
+    margin-bottom:6px;
+  }
+  .field input, .field select{
+    width:100%;
+    padding:11px 13px;
+    font-size:14.5px;
+    font-family:'Work Sans', sans-serif;
+    border:1px solid var(--line);
+    border-radius:9px;
+    background:#FCFDFB;
+    color:var(--ink);
+    outline:none;
+    transition:border-color .15s ease, box-shadow .15s ease;
+    appearance:none;
+    -webkit-appearance:none;
+  }
+  .field select{
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9'><path d='M1 1l6 6 6-6' stroke='%23173A2C' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat:no-repeat;
+    background-position:right 13px center;
+    padding-right:34px;
+  }
+  .field input:focus, .field select:focus{
+    border-color:var(--gold);
+    box-shadow:0 0 0 3px rgba(180,134,58,0.15);
+  }
+  .field input.invalid{
+    border-color:var(--error);
+  }
+  .Distributor-feedback{
+    margin-top:7px;
+    font-size:12.5px;
+    display:none;
+    align-items:center;
+    gap:6px;
+  }
+  .Distributor-feedback.show{display:flex;}
+  .Distributor-feedback.found{color:var(--success);}
+  .Distributor-feedback.notfound{color:var(--error);}
+  .Distributor-feedback .dot{
+    width:6px;height:6px;border-radius:50%;
+    background:currentColor;
+    flex-shrink:0;
+  }
+  .row2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+  .position-toggle{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+  .position-toggle input{display:none;}
+  .position-toggle label{
+    text-align:center;
+    padding:11px 0;
+    border:1px solid var(--line);
+    border-radius:9px;
+    font-size:14px;
+    font-weight:500;
+    color:#5A6B5E;
+    cursor:pointer;
+    transition:all .15s ease;
+    margin:0;
+  }
+  .position-toggle input:checked + label{
+    border-color:var(--deep-green);
+    background:var(--deep-green);
+    color:#fff;
+    font-weight:600;
+  }
+  .terms{
+    display:flex;
+    gap:9px;
+    align-items:flex-start;
+    margin:20px 0 22px;
+    font-size:12.5px;
+    color:#5A6B5E;
+    line-height:1.5;
+  }
+  .terms input{margin-top:2px;flex-shrink:0;}
+  .terms a{color:var(--deep-green);font-weight:600;text-decoration:none;border-bottom:1px solid var(--gold-soft);}
+  button.submit{
+    width:100%;
+    padding:13px;
+    background:var(--deep-green);
+    color:#F5F1E4;
+    border:none;
+    border-radius:9px;
+    font-family:'Work Sans', sans-serif;
+    font-size:15px;
+    font-weight:600;
+    letter-spacing:0.02em;
+    cursor:pointer;
+    transition:background .15s ease, transform .1s ease;
+  }
+  button.submit:hover{background:#0F2D21;}
+  button.submit:active{transform:scale(0.99);}
+  button.submit:disabled{opacity:0.6;cursor:not-allowed;}
+  .msg{
+    margin-top:14px;
+    font-size:13px;
+    text-align:center;
+    padding:10px;
+    border-radius:8px;
+    display:none;
+  }
+  .msg.show{display:block;}
+  .msg.error{background:#FBEAE7;color:var(--error);}
+  .msg.success{background:#E7F0E9;color:var(--success);}
+  .footlinks{
+    text-align:center;
+    margin-top:20px;
+    font-size:12.5px;
+    color:#5A6B5E;
+  }
+  .footlinks a{color:var(--deep-green);text-decoration:none;font-weight:600;}
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brandmark">
+    <div class="seal">K</div>
+    <div class="name">Kohinoor<span>Distributor Registration</span></div>
+  </div>
+
+  <div class="card">
+    <h1>Registrations</h1>
+    <p class="sub">Enter your Distributor's code to get started.</p>
+
+    <form id="regForm" novalidate>
+      <div class="field">
+        <label for="DistributorCode">Distributor Code</label>
+        <input type="text" id="DistributorCode" autocomplete="off" placeholder="Code" required>
+        <div class="Distributor-feedback" id="DistributorFeedback"><span class="dot"></span><span id="DistributorFeedbackText"></span></div>
+      </div>
+
+      <div class="field">
+        <label>Select Position</label>
+        <div class="position-toggle">
+          <input type="radio" name="position" id="posLeft" value="Left" required>
+          <label for="posLeft">Left</label>
+          <input type="radio" name="position" id="posRight" value="Right">
+          <label for="posRight">Right</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="fullName">Full Name</label>
+        <input type="text" id="fullName" placeholder="Full Name" required>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" autocomplete="off" maxlength="13" placeholder="Phone Number" required>
+        </div>
+        <div class="field">
+          <label for="gender">Gender</label>
+          <select id="gender" required>
+            <option value="" disabled selected>Select</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="Email id" required>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Enter Password" required minlength="6">
+        </div>
+        <div class="field">
+          <label for="confirmPassword">Confirm Password</label>
+          <input type="password" id="confirmPassword" required minlength="6">
+        </div>
+      </div>
+
+      <label class="terms">
+        <input type="checkbox" id="acceptTerms" required>
+        <span>I accept the <a href="#">Terms of Use</a> and <a href="#">Privacy Policy</a></span>
+      </label>
+
+      <button type="submit" class="submit" id="submitBtn">Create Account</button>
+      <div class="msg" id="formMsg"></div>
+    </form>
+
+    <div class="footlinks">Already have an account? <a href="#">Log In</a></div>
+  </div>
+</div>
+
+<script>
+  // ---- Distributor code -> name lookup ----
+  // Keep this list in sync with the one in the Apps Script (Code.gs).
+  const DISTRIBUTORS = {
+    // Bihar (KMBR)
+    "KMBRB1K3": "Bablu Kumar Ram (Branch Manager)",
+    "KMBRM4M6": "Ranjay Kumar (Ranjay Mukhiya)",
+    "KMBRB3P7": "Baidyanath Pandit",
+    "KMBRS4S2": "Santosh Sahani",
+    "KMBRS5P8": "Shyam Lal Prasad",
+    "KMBRC6K4": "Chandan Kumar",
+    "KMBLR9K2": "Rupesh Kumar",
+    "KMBRV10K": "Vibhuti Kumar",
+    "KMBRD11K": "Dhiraj Kumar",
+
+    // Delhi NCR
+    "KMDLV1S6": "Vishnu Soni",
+    "KMKLR2R9": "Rajesh Rathore",
+    "KMKLR3S4": "Rohan Singh Rathore",
+    "KMKLA4S8": "Aman Sharma",
+    "KMKDL5R2": "Rahul Kumar",
+    "KMKDS6K1": "Sohel Kumar",
+
+    // Jharkhand (KMJH)
+    "KMJHA1K5": "Amresh Kumar",
+    "KMJHS2S8": "Shiv Shankar",
+    "KMJHK3P1": "Krishna Pandey",
+    "KMJHP4P7": "Pankaj Pandey",
+    "KMJHH5P2": "Himanshu Pandey",
+    "KMJHP6M4": "Piyush Mishra",
+    "KMJHA7K9": "Amit Kumar",
+    "KMJHR8K3": "Ravi Kumar",
+    "KMJHM9K1": "Munna Kumar",
+
+    // Punjab (KMPB)
+    "KMPBK1G5": "Kunal Gupta (Branch Manager)",
+    "KMPBR12K": "Rahul Kumar Shah",
+    "KMPBS1R9": "Sunil Kumar Rai",
+    "KMPBD5K3": "Dheeraj Kumar",
+    "KMPBR7G2": "Raj Kumar Giri",
+    "KMPBN5D2": "Nagdev",
+
+    // Uttar Pradesh (KMUP)
+    "KMUP5R1T": "Hareram Gupta (Branch Manager)",
+    "KMUPX2K7": "Pappu Kumar Ram",
+    "KMUPX9Z3": "Avdhesh Pratap (Guddu)",
+    "KMUPB3N9": "Ajit Kumar Ram",
+    "KMUPT3V7": "Tribhuvan",
+    "KMUPB3G8": "Bhagwan",
+    "KMUPD3N6": "Dev Narayan",
+    "KMUPH2R4": "Hemraj",
+    "KMUPP3T9": "Dr. Pintu",
+    "KMUPS1J5": "Sanjay",
+    "KMUPH1D8": "Heera Das",
+    "KMUPR1K2": "Ramkeshwar"
+  };
+
+  // ---- IMPORTANT: paste your deployed Google Apps Script Web App URL here ----
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTNibxpkZwxw_DUjVcq4F7pPJuM9iV_BnEBu5rJKVPsQ_VpyT8jqwNQH15LrUG29p9/exec";
+
+  const DistributorInput = document.getElementById('DistributorCode');
+  const feedback = document.getElementById('DistributorFeedback');
+  const feedbackText = document.getElementById('DistributorFeedbackText');
+  let matchedDistributorName = "";
+
+  function checkDistributorCode(){
+    const code = DistributorInput.value.trim().toUpperCase();
+    if(!code){
+      feedback.classList.remove('show','found','notfound');
+      matchedDistributorName = "";
+      return;
+    }
+    if(DISTRIBUTORS[code]){
+      matchedDistributorName = DISTRIBUTORS[code];
+      feedbackText.textContent = matchedDistributorName;
+      feedback.classList.add('show','found');
+      feedback.classList.remove('notfound');
+      DistributorInput.classList.remove('invalid');
+    } else {
+      matchedDistributorName = "";
+      feedbackText.textContent = "Code not recognized";
+      feedback.classList.add('show','notfound');
+      feedback.classList.remove('found');
+    }
+  }
+  DistributorInput.addEventListener('input', checkDistributorCode);
+
+  // ---- Phone validation ----
+  // Accepts: 10-digit starting 6-9, optionally prefixed with +91 / 91 / 0
+  const PHONE_RE = /^(?:\+91|91|0)?[6-9]\d{9}$/;
+  function normalizePhone(value){
+    const m = value.trim().replace(/[\s-]/g,'').match(/^(?:\+91|91|0)?([6-9]\d{9})$/);
+    return m ? m[1] : null;
+  }
+
+  // ---- Form submit ----
+  const form = document.getElementById('regForm');
+  const msg = document.getElementById('formMsg');
+  const submitBtn = document.getElementById('submitBtn');
+  const phoneInput = document.getElementById('phone');
+
+form.addEventListener('submit', function(e){
+  e.preventDefault();
+
+  msg.classList.remove('show','error','success');
+  phoneInput.classList.remove('invalid');
+  DistributorInput.classList.remove('invalid');
+
+  const code = DistributorInput.value.trim().toUpperCase();
+  const position = document.querySelector('input[name="position"]:checked');
+
+  const fullName = document.getElementById('fullName').value.trim();
+  const phone = normalizePhone(phoneInput.value);
+  const gender = document.getElementById('gender').value;
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const confirmPassword = document.getElementById('confirmPassword').value;
+  const termsAccepted = document.getElementById('acceptTerms').checked;
+
+
+  // Distributor Code
+  if(!DISTRIBUTORS[code]){
+    msg.textContent = "Please enter a valid Distributor code.";
+    msg.classList.add('show','error');
+    DistributorInput.classList.add('invalid');
+    return;
+  }
+
+
+  // Position
+  if(!position){
+    msg.textContent = "Please select a position.";
+    msg.classList.add('show','error');
+    return;
+  }
+
+
+  // Full Name
+  if(!fullName){
+    msg.textContent = "Please enter your full name.";
+    msg.classList.add('show','error');
+    return;
+  }
+
+
+  // Phone
+  if(!phone){
+    msg.textContent = "Enter a valid 10-digit Indian mobile number.";
+    msg.classList.add('show','error');
+    phoneInput.classList.add('invalid');
+    return;
+  }
+
+
+  // Gender
+  if(!gender){
+    msg.textContent = "Please select your gender.";
+    msg.classList.add('show','error');
+    return;
+  }
+
+
+  // Email
+  if(!email){
+    msg.textContent = "Please enter your email address.";
+    msg.classList.add('show','error');
+    return;
+  }
+
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    msg.textContent = "Please enter a valid email address.";
+    msg.classList.add('show','error');
+    return;
+  }
+
+
+  // Password
+  if(!password){
+    msg.textContent = "Please enter a password.";
+    msg.classList.add('show','error');
+    return;
+  }
+
+  if(password.length < 6){
+    msg.textContent = "Password must be at least 6 characters.";
+    msg.classList.add('show','error');
+    return;
+  }
+
+
+  // Confirm Password
+  if(!confirmPassword){
+    msg.textContent = "Please confirm your password.";
+    msg.classList.add('show','error');
+    return;
+  }
+
+  if(password !== confirmPassword){
+    msg.textContent = "Passwords do not match.";
+    msg.classList.add('show','error');
+    return;
+  }
+
+
+  // Terms
+  if(!termsAccepted){
+    msg.textContent = "Please accept the Terms of Use and Privacy Policy.";
+    msg.classList.add('show','error');
+    return;
+  }
+
+
+  // Payload
+  const payload = {
+    DistributorCode: code,
+    DistributorName: matchedDistributorName,
+    position: position.value,
+    fullName: fullName,
+    phone: phone,
+    gender: gender,
+    email: email,
+    password: password
+  };
+
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Submitting...";
+
+
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'text/plain;charset=utf-8'
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(function(res){
+    return res.json();
+  })
+  .then(function(result){
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Create Account";
+
+    if(result.result === 'success'){
+
+      msg.textContent =
+        result.message ||
+        ("Registration successful! Welcome, " + payload.fullName + ".");
+
+      msg.classList.add('show','success');
+
+      form.reset();
+      feedback.classList.remove('show');
+
+    } else {
+
+      msg.textContent =
+        result.message ||
+        "Something went wrong. Please try again.";
+
+      msg.classList.add('show','error');
+    }
+
+  })
+  .catch(function(){
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Create Account";
+
+    msg.textContent = "Something went wrong. Please try again.";
+    msg.classList.add('show','error');
+
+  });
+});
+</script>
+</body>
+</html>
