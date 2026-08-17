@@ -63,7 +63,7 @@
     display:block;
     font-family:'Work Sans', sans-serif;
     font-weight:500;
-    font-size:11px;
+    font-size:12px;
     letter-spacing:0.14em;
     text-transform:uppercase;
     color:var(--gold);
@@ -124,20 +124,20 @@
     border-color:var(--gold);
     box-shadow:0 0 0 3px rgba(180,134,58,0.15);
   }
-  .field input.invalid{
+  .field input.invalid, .field select.invalid{
     border-color:var(--error);
   }
-  .Distributor-feedback{
+  .employee-feedback{
     margin-top:7px;
     font-size:12.5px;
     display:none;
     align-items:center;
     gap:6px;
   }
-  .Distributor-feedback.show{display:flex;}
-  .Distributor-feedback.found{color:var(--success);}
-  .Distributor-feedback.notfound{color:var(--error);}
-  .Distributor-feedback .dot{
+  .employee-feedback.show{display:flex;}
+  .employee-feedback.found{color:var(--success);}
+  .employee-feedback.notfound{color:var(--error);}
+  .employee-feedback .dot{
     width:6px;height:6px;border-radius:50%;
     background:currentColor;
     flex-shrink:0;
@@ -146,30 +146,6 @@
     display:grid;
     grid-template-columns:1fr 1fr;
     gap:12px;
-  }
-  .position-toggle{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-  }
-  .position-toggle input{display:none;}
-  .position-toggle label{
-    text-align:center;
-    padding:11px 0;
-    border:1px solid var(--line);
-    border-radius:9px;
-    font-size:14px;
-    font-weight:500;
-    color:#5A6B5E;
-    cursor:pointer;
-    transition:all .15s ease;
-    margin:0;
-  }
-  .position-toggle input:checked + label{
-    border-color:var(--deep-green);
-    background:var(--deep-green);
-    color:#fff;
-    font-weight:600;
   }
   .terms{
     display:flex;
@@ -226,28 +202,30 @@
 <div class="wrap">
   <div class="brandmark">
     <div class="seal">K</div>
-    <div class="name">Kohinoor<span>Distributor Registration</span></div>
+    <div class="name">Kohinoor<span>Employee Registration</span></div>
   </div>
 
   <div class="card">
-    <h1>Registrations</h1>
-    <p class="sub">Enter your Distributor's code to get started.</p>
+    <h1>Registration</h1>
+    <p class="sub">Enter your Employee ID to get started.</p>
 
     <form id="regForm" novalidate>
       <div class="field">
-        <label for="DistributorCode">Distributor Code</label>
-        <input type="text" id="DistributorCode" autocomplete="off" placeholder="Code" required>
-        <div class="Distributor-feedback" id="DistributorFeedback"><span class="dot"></span><span id="DistributorFeedbackText"></span></div>
+        <label for="EmployeeId">Employee ID</label>
+        <input type="text" id="EmployeeId" autocomplete="off" placeholder="Employee ID" required>
+        <div class="employee-feedback" id="EmployeeFeedback"><span class="dot"></span><span id="EmployeeFeedbackText"></span></div>
       </div>
 
       <div class="field">
-        <label>Select Position</label>
-        <div class="position-toggle">
-          <input type="radio" name="position" id="posLeft" value="Left" required>
-          <label for="posLeft">Left</label>
-          <input type="radio" name="position" id="posRight" value="Right">
-          <label for="posRight">Right</label>
-        </div>
+        <label for="jobPosition">Position</label>
+        <select id="jobPosition" required>
+          <option value="" disabled selected>Select your position</option>
+          <option value="Sales Manager">Sales Manager</option>
+          <option value="Area Business Manager">Area Business Manager</option>
+          <option value="Sales Associate">Sales Associate</option>
+          <option value="Branch Manager">Branch Manager</option>
+          <option value="Distributor">Distributor</option>
+        </select>
       </div>
 
       <div class="field">
@@ -291,7 +269,7 @@
         <span>I accept the <a href="#">Terms of Use</a> and <a href="#">Privacy Policy</a></span>
       </label>
 
-      <button type="submit" class="submit" id="submitBtn">Create Account</button>
+      <button type="submit" class="submit" id="submitBtn">Register</button>
       <div class="msg" id="formMsg"></div>
     </form>
 
@@ -300,91 +278,105 @@
 </div>
 
 <script>
-  // ---- Distributor code -> name lookup ----
+  // ---- Employee ID -> name / position / state lookup ----
   // Keep this list in sync with the one in the Apps Script (Code.gs).
-  const DISTRIBUTORS = {
-    // Bihar (KMBR)
-    "KMBRB1K3": "Bablu Kumar Ram (Branch Manager)",
-    "KMBRM4M6": "Ranjay Kumar (Ranjay Mukhiya)",
-    "KMBRB3P7": "Baidyanath Pandit",
-    "KMBRS4S2": "Santosh Sahani",
-    "KMBRS5P8": "Shyam Lal Prasad",
-    "KMBRC6K4": "Chandan Kumar",
-    "KMBLR9K2": "Rupesh Kumar",
-    "KMBRV10K": "Vibhuti Kumar",
-    "KMBRD11K": "Dhiraj Kumar",
+  const EMPLOYEES = {
+    // Bihar
+    "KMBRB1K3": { name: "Bablu Kumar Ram", position: "Branch Manager", state: "BIHAR" },
+    "KMBRM4M6": { name: "Ranjay Kumar (Ranjay Mukhiya)", position: "Sales Manager", state: "BIHAR" },
+    "KMBRB3P7": { name: "Baidyanath Pandit", position: "Sales Manager", state: "BIHAR" },
+    "KMBRS4S2": { name: "Santosh Sahani", position: "Sales Manager", state: "BIHAR" },
+    "KMBRS5P8": { name: "Shyam Lal Prasad", position: "Sales Manager", state: "BIHAR" },
+    "KMBRC6K4": { name: "Chandan Kumar", position: "Sales Manager", state: "BIHAR" },
+    "KMBLR9K2": { name: "Rupesh Kumar", position: "Sales Manager", state: "BIHAR" },
+    "KMBRV10K": { name: "Vibhuti Kumar", position: "Sales Manager", state: "BIHAR" },
+    "KMBRD11K": { name: "Dhiraj Kumar", position: "Sales Manager", state: "BIHAR" },
 
     // Delhi NCR
-    "KMDLV1S6": "Vishnu Soni",
-    "KMKLR2R9": "Rajesh Rathore",
-    "KMKLR3S4": "Rohan Singh Rathore",
-    "KMKLA4S8": "Aman Sharma",
-    "KMKDL5R2": "Rahul Kumar",
-    "KMKDS6K1": "Sohel Kumar",
+    "KMDLV1S6": { name: "Vishnu Soni", position: "Sales Manager", state: "DELHI NCR" },
+    "KMKLR2R9": { name: "Rajesh Rathore", position: "Sales Manager", state: "DELHI NCR" },
+    "KMKLR3S4": { name: "Rohan Singh Rathore", position: "Sales Manager", state: "DELHI NCR" },
+    "KMKLA4S8": { name: "Aman Sharma", position: "Sales Manager", state: "DELHI NCR" },
+    "KMKDL5R2": { name: "Rahul Kumar", position: "Sales Manager", state: "DELHI NCR" },
+    "KMKDS6K1": { name: "Sohel Kumar", position: "Sales Manager", state: "DELHI NCR" },
 
-    // Jharkhand (KMJH)
-    "KMJHA1K5": "Amresh Kumar",
-    "KMJHS2S8": "Shiv Shankar",
-    "KMJHK3P1": "Krishna Pandey",
-    "KMJHP4P7": "Pankaj Pandey",
-    "KMJHH5P2": "Himanshu Pandey",
-    "KMJHP6M4": "Piyush Mishra",
-    "KMJHA7K9": "Amit Kumar",
-    "KMJHR8K3": "Ravi Kumar",
-    "KMJHM9K1": "Munna Kumar",
+    // Jharkhand
+    "KMJHA1K5": { name: "Amresh Kumar", position: "Sales Manager", state: "JHARKHAND" },
+    "KMJHS2S8": { name: "Shiv Shankar", position: "Sales Manager", state: "JHARKHAND" },
+    "KMJHK3P1": { name: "Krishna Pandey", position: "Sales Manager", state: "JHARKHAND" },
+    "KMJHP4P7": { name: "Pankaj Pandey", position: "Sales Manager", state: "JHARKHAND" },
+    "KMJHH5P2": { name: "Himanshu Pandey", position: "Sales Manager", state: "JHARKHAND" },
+    "KMJHP6M4": { name: "Piyush Mishra", position: "Sales Manager", state: "JHARKHAND" },
+    "KMJHA7K9": { name: "Amit Kumar", position: "Sales Manager", state: "JHARKHAND" },
+    "KMJHR8K3": { name: "Ravi Kumar", position: "Sales Manager", state: "JHARKHAND" },
+    "KMJHM9K1": { name: "Munna Kumar", position: "Sales Manager", state: "JHARKHAND" },
 
-    // Punjab (KMPB)
-    "KMPBK1G5": "Kunal Gupta (Branch Manager)",
-    "KMPBR12K": "Rahul Kumar Shah",
-    "KMPBS1R9": "Sunil Kumar Rai",
-    "KMPBD5K3": "Dheeraj Kumar",
-    "KMPBR7G2": "Raj Kumar Giri",
-    "KMPBN5D2": "Nagdev",
+    // Punjab
+    "KMPBK1G5": { name: "Kunal Gupta", position: "Branch Manager", state: "PUNJAB" },
+    "KMPBR12K": { name: "Rahul Kumar Shah", position: "Sales Manager", state: "PUNJAB" },
+    "KMPBS1R9": { name: "Sunil Kumar Rai", position: "Sales Manager", state: "PUNJAB" },
+    "KMPBD5K3": { name: "Dheeraj Kumar", position: "Sales Manager", state: "PUNJAB" },
+    "KMPBR7G2": { name: "Raj Kumar Giri", position: "Sales Manager", state: "PUNJAB" },
+    "KMPBN5D2": { name: "Nagdev", position: "Sales Manager", state: "PUNJAB" },
 
-    // Uttar Pradesh (KMUP)
-    "KMUP5R1T": "Hareram Gupta (Branch Manager)",
-    "KMUPX2K7": "Pappu Kumar Ram",
-    "KMUPX9Z3": "Avdhesh Pratap (Guddu)",
-    "KMUPB3N9": "Ajit Kumar Ram",
-    "KMUPT3V7": "Tribhuvan",
-    "KMUPB3G8": "Bhagwan",
-    "KMUPD3N6": "Dev Narayan",
-    "KMUPH2R4": "Hemraj",
-    "KMUPP3T9": "Dr. Pintu",
-    "KMUPS1J5": "Sanjay",
-    "KMUPH1D8": "Heera Das",
-    "KMUPR1K2": "Ramkeshwar"
+    // Uttar Pradesh
+    "KMUP5R1T": { name: "Hareram Gupta", position: "Branch Manager", state: "UTTAR PRADESH" },
+    "KMUPX2K7": { name: "Pappu Kumar Ram", position: "Sales Manager", state: "UTTAR PRADESH" },
+    "KMUPX9Z3": { name: "Avdhesh Pratap (Guddu)", position: "Sales Manager", state: "UTTAR PRADESH" },
+    "KMUPB3N9": { name: "Ajit Kumar Ram", position: "Sales Manager", state: "UTTAR PRADESH" },
+    "KMUPT3V7": { name: "Tribhuvan", position: "Sales Manager", state: "UTTAR PRADESH" },
+    "KMUPB3G8": { name: "Bhagwan", position: "Sales Manager", state: "UTTAR PRADESH" },
+    "KMUPD3N6": { name: "Dev Narayan", position: "Sales Manager", state: "UTTAR PRADESH" },
+    "KMUPH2R4": { name: "Hemraj", position: "Sales Manager", state: "UTTAR PRADESH" },
+    "KMUPP3T9": { name: "Dr. Pintu", position: "Sales Manager", state: "UTTAR PRADESH" },
+    "KMUPS1J5": { name: "Sanjay", position: "Sales Manager", state: "UTTAR PRADESH" },
+    "KMUPH1D8": { name: "Heera Das", position: "Sales Manager", state: "UTTAR PRADESH" },
+    "KMUPR1K2": { name: "Ramkeshwar", position: "Sales Manager", state: "UTTAR PRADESH" },
+    "KMUPX2S1": { name: "Shivlal Ram (Ram Sumer Ram)", position: "Distributor", state: "UTTAR PRADESH" },
+    "KMUPX2A2": { name: "Amarnath Ram", position: "Sales Manager", state: "UTTAR PRADESH" },
+    "KMJHS10V": { name: "Saurav Verma", position: "Sales Manager", state: "JHARKHAND" },
+    "KMJHR11R": { name: "Ravi Rashila", position: "Sales Manager", state: "JHARKHAND" }
   };
+
+  function formatEmployeeDisplay(emp){
+    return emp.name + " (" + emp.position + ") - " + emp.state;
+  }
 
   // ---- IMPORTANT: paste your deployed Google Apps Script Web App URL here ----
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTNibxpkZwxw_DUjVcq4F7pPJuM9iV_BnEBu5rJKVPsQ_VpyT8jqwNQH15LrUG29p9/exec";
 
-  const DistributorInput = document.getElementById('DistributorCode');
-  const feedback = document.getElementById('DistributorFeedback');
-  const feedbackText = document.getElementById('DistributorFeedbackText');
-  let matchedDistributorName = "";
+  const employeeInput = document.getElementById('EmployeeId');
+  const feedback = document.getElementById('EmployeeFeedback');
+  const feedbackText = document.getElementById('EmployeeFeedbackText');
+  let matchedEmployeeName = "";
 
-  function checkDistributorCode(){
-    const code = DistributorInput.value.trim().toUpperCase();
+  function checkEmployeeId(){
+    const code = employeeInput.value.trim().toUpperCase();
     if(!code){
       feedback.classList.remove('show','found','notfound');
-      matchedDistributorName = "";
+      matchedEmployeeName = "";
       return;
     }
-    if(DISTRIBUTORS[code]){
-      matchedDistributorName = DISTRIBUTORS[code];
-      feedbackText.textContent = matchedDistributorName;
+    const emp = EMPLOYEES[code];
+    if(emp){
+      matchedEmployeeName = emp.name;
+      feedbackText.textContent = formatEmployeeDisplay(emp);
       feedback.classList.add('show','found');
       feedback.classList.remove('notfound');
-      DistributorInput.classList.remove('invalid');
+      employeeInput.classList.remove('invalid');
     } else {
-      matchedDistributorName = "";
+      matchedEmployeeName = "";
       feedbackText.textContent = "Code not recognized";
       feedback.classList.add('show','notfound');
       feedback.classList.remove('found');
     }
   }
-  DistributorInput.addEventListener('input', checkDistributorCode);
+  employeeInput.addEventListener('input', checkEmployeeId);
+
+  const jobPositionSelectEl = document.getElementById('jobPosition');
+  jobPositionSelectEl.addEventListener('change', function(){
+    jobPositionSelectEl.classList.remove('invalid');
+  });
 
   // ---- Phone validation ----
   // Accepts: 10-digit starting 6-9, optionally prefixed with +91 / 91 / 0
@@ -399,16 +391,18 @@
   const msg = document.getElementById('formMsg');
   const submitBtn = document.getElementById('submitBtn');
   const phoneInput = document.getElementById('phone');
+  const jobPositionSelect = document.getElementById('jobPosition');
 
 form.addEventListener('submit', function(e){
   e.preventDefault();
 
   msg.classList.remove('show','error','success');
   phoneInput.classList.remove('invalid');
-  DistributorInput.classList.remove('invalid');
+  employeeInput.classList.remove('invalid');
+  jobPositionSelect.classList.remove('invalid');
 
-  const code = DistributorInput.value.trim().toUpperCase();
-  const position = document.querySelector('input[name="position"]:checked');
+  const code = employeeInput.value.trim().toUpperCase();
+  const jobPosition = jobPositionSelect.value;
 
   const fullName = document.getElementById('fullName').value.trim();
   const phone = normalizePhone(phoneInput.value);
@@ -419,19 +413,20 @@ form.addEventListener('submit', function(e){
   const termsAccepted = document.getElementById('acceptTerms').checked;
 
 
-  // Distributor Code
-  if(!DISTRIBUTORS[code]){
-    msg.textContent = "Please enter a valid Distributor code.";
+  // Employee ID
+  if(!EMPLOYEES[code]){
+    msg.textContent = "Please enter a valid Employee ID.";
     msg.classList.add('show','error');
-    DistributorInput.classList.add('invalid');
+    employeeInput.classList.add('invalid');
     return;
   }
 
 
   // Position
-  if(!position){
-    msg.textContent = "Please select a position.";
+  if(!jobPosition){
+    msg.textContent = "Please select your position.";
     msg.classList.add('show','error');
+    jobPositionSelect.classList.add('invalid');
     return;
   }
 
@@ -513,9 +508,9 @@ form.addEventListener('submit', function(e){
 
   // Payload
   const payload = {
-    DistributorCode: code,
-    DistributorName: matchedDistributorName,
-    position: position.value,
+    EmployeeId: code,
+    EmployeeName: matchedEmployeeName,
+    position: jobPosition,
     fullName: fullName,
     phone: phone,
     gender: gender,
@@ -541,7 +536,7 @@ form.addEventListener('submit', function(e){
   .then(function(result){
 
     submitBtn.disabled = false;
-    submitBtn.textContent = "Create Account";
+    submitBtn.textContent = "Register";
 
     if(result.result === 'success'){
 
@@ -567,7 +562,7 @@ form.addEventListener('submit', function(e){
   .catch(function(){
 
     submitBtn.disabled = false;
-    submitBtn.textContent = "Create Account";
+    submitBtn.textContent = "Register";
 
     msg.textContent = "Something went wrong. Please try again.";
     msg.classList.add('show','error');
