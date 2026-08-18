@@ -134,6 +134,9 @@
     align-items:flex-start;
     gap:6px;
   }
+  @media (max-width:420px){
+    .employee-feedback{font-size:11px;}
+  }
   .employee-feedback.show{display:flex;}
   .employee-feedback.found{color:var(--success);}
   .employee-feedback.notfound{color:var(--error);}
@@ -148,6 +151,7 @@
   .emp-sales{
     color:var(--gold);
     font-weight:600;
+    white-space:nowrap;
   }
   .emp-members{
     list-style:none;
@@ -322,7 +326,7 @@
     let html =
       '<div class="emp-summary">' +
         escapeHtml(data.name) + ' (' + escapeHtml(data.position) + ') — ' + escapeHtml(data.state) +
-        ' <span class="emp-sales">· Sale — ' + data.totalSales + '</span>' +
+        ' <span class="emp-sales">Sale — ' + data.totalSales + '</span>' +
       '</div>';
 
     if(data.members && data.members.length){
