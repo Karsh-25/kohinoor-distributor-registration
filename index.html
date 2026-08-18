@@ -131,7 +131,7 @@
     margin-top:7px;
     font-size:12.5px;
     display:none;
-    align-items:center;
+    align-items:flex-start;
     gap:6px;
   }
   .employee-feedback.show{display:flex;}
@@ -141,6 +141,24 @@
     width:6px;height:6px;border-radius:50%;
     background:currentColor;
     flex-shrink:0;
+    margin-top:5px;
+  }
+  .employee-feedback .body{flex:1;min-width:0;}
+  .emp-summary{line-height:1.4;}
+  .emp-sales{
+    color:var(--gold);
+    font-weight:600;
+  }
+  .emp-members{
+    list-style:none;
+    margin:6px 0 0;
+    padding:0;
+    border-left:2px solid var(--gold-soft);
+  }
+  .emp-members li{
+    padding:2px 0 2px 12px;
+    font-size:12px;
+    color:#5A6B5E;
   }
   .row2{
     display:grid;
@@ -213,7 +231,7 @@
       <div class="field">
         <label for="EmployeeId">Employee ID</label>
         <input type="text" id="EmployeeId" autocomplete="off" placeholder="Employee ID" required>
-        <div class="employee-feedback" id="EmployeeFeedback"><span class="dot"></span><span id="EmployeeFeedbackText"></span></div>
+        <div class="employee-feedback" id="EmployeeFeedback"><span class="dot"></span><span class="body" id="EmployeeFeedbackText"></span></div>
       </div>
 
       <div class="field">
@@ -278,98 +296,87 @@
 </div>
 
 <script>
-  // ---- Employee ID -> name / position / state lookup ----
-  // Keep this list in sync with the one in the Apps Script (Code.gs).
-  const EMPLOYEES = {
-    // Bihar
-    "KMBRB1K3": { name: "Bablu Kumar Ram", position: "Branch Manager", state: "BIHAR" },
-    "KMBRM4M6": { name: "Ranjay Kumar (Ranjay Mukhiya)", position: "Sales Manager", state: "BIHAR" },
-    "KMBRB3P7": { name: "Baidyanath Pandit", position: "Sales Manager", state: "BIHAR" },
-    "KMBRS4S2": { name: "Santosh Sahani", position: "Sales Manager", state: "BIHAR" },
-    "KMBRS5P8": { name: "Shyam Lal Prasad", position: "Sales Manager", state: "BIHAR" },
-    "KMBRC6K4": { name: "Chandan Kumar", position: "Sales Manager", state: "BIHAR" },
-    "KMBLR9K2": { name: "Rupesh Kumar", position: "Sales Manager", state: "BIHAR" },
-    "KMBRV10K": { name: "Vibhuti Kumar", position: "Sales Manager", state: "BIHAR" },
-    "KMBRD11K": { name: "Dhiraj Kumar", position: "Sales Manager", state: "BIHAR" },
-
-    // Delhi NCR
-    "KMDLV1S6": { name: "Vishnu Soni", position: "Sales Manager", state: "DELHI NCR" },
-    "KMKLR2R9": { name: "Rajesh Rathore", position: "Sales Manager", state: "DELHI NCR" },
-    "KMKLR3S4": { name: "Rohan Singh Rathore", position: "Sales Manager", state: "DELHI NCR" },
-    "KMKLA4S8": { name: "Aman Sharma", position: "Sales Manager", state: "DELHI NCR" },
-    "KMKDL5R2": { name: "Rahul Kumar", position: "Sales Manager", state: "DELHI NCR" },
-    "KMKDS6K1": { name: "Sohel Kumar", position: "Sales Manager", state: "DELHI NCR" },
-
-    // Jharkhand
-    "KMJHA1K5": { name: "Amresh Kumar", position: "Sales Manager", state: "JHARKHAND" },
-    "KMJHS2S8": { name: "Shiv Shankar", position: "Sales Manager", state: "JHARKHAND" },
-    "KMJHK3P1": { name: "Krishna Pandey", position: "Sales Manager", state: "JHARKHAND" },
-    "KMJHP4P7": { name: "Pankaj Pandey", position: "Sales Manager", state: "JHARKHAND" },
-    "KMJHH5P2": { name: "Himanshu Pandey", position: "Sales Manager", state: "JHARKHAND" },
-    "KMJHP6M4": { name: "Piyush Mishra", position: "Sales Manager", state: "JHARKHAND" },
-    "KMJHA7K9": { name: "Amit Kumar", position: "Area Business Manager", state: "JHARKHAND" },
-    "KMJHR8K3": { name: "Ravi Kumar", position: "Sales Manager", state: "JHARKHAND" },
-    "KMJHM9K1": { name: "Munna Kumar", position: "Sales Manager", state: "JHARKHAND" },
-
-    // Punjab
-    "KMPBK1G5": { name: "Kunal Gupta", position: "Branch Manager", state: "PUNJAB" },
-    "KMPBR12K": { name: "Rahul Kumar Shah", position: "Sales Manager", state: "PUNJAB" },
-    "KMPBS1R9": { name: "Sunil Kumar Rai", position: "Sales Manager", state: "PUNJAB" },
-    "KMPBD5K3": { name: "Dheeraj Kumar", position: "Sales Manager", state: "PUNJAB" },
-    "KMPBR7G2": { name: "Raj Kumar Giri", position: "Sales Manager", state: "PUNJAB" },
-    "KMPBN5D2": { name: "Nagdev", position: "Sales Manager", state: "PUNJAB" },
-
-    // Uttar Pradesh
-    "KMUP5R1T": { name: "Hareram Gupta", position: "Branch Manager", state: "UTTAR PRADESH" },
-    "KMUPX2K7": { name: "Pappu Kumar Ram", position: "Sales Manager", state: "UTTAR PRADESH" },
-    "KMUPX9Z3": { name: "Avdhesh Pratap (Guddu)", position: "Sales Manager", state: "UTTAR PRADESH" },
-    "KMUPB3N9": { name: "Ajit Kumar Ram", position: "Sales Manager", state: "UTTAR PRADESH" },
-    "KMUPT3V7": { name: "Tribhuvan", position: "Sales Manager", state: "UTTAR PRADESH" },
-    "KMUPB3G8": { name: "Bhagwan", position: "Sales Manager", state: "UTTAR PRADESH" },
-    "KMUPD3N6": { name: "Dev Narayan", position: "Sales Manager", state: "UTTAR PRADESH" },
-    "KMUPH2R4": { name: "Hemraj", position: "Sales Manager", state: "UTTAR PRADESH" },
-    "KMUPP3T9": { name: "Dr. Pintu", position: "Sales Manager", state: "UTTAR PRADESH" },
-    "KMUPS1J5": { name: "Sanjay", position: "Sales Manager", state: "UTTAR PRADESH" },
-    "KMUPH1D8": { name: "Heera Das", position: "Sales Manager", state: "UTTAR PRADESH" },
-    "KMUPR1K2": { name: "Ramkeshwar", position: "Sales Manager", state: "UTTAR PRADESH" },
-    "KMUPX2S1": { name: "Shivlal Ram (Ram Sumer Ram)", position: "Distributor", state: "UTTAR PRADESH" },
-    "KMUPX2A2": { name: "Amarnath Ram", position: "Sales Manager", state: "UTTAR PRADESH" },
-    "KMJHS10V": { name: "Saurav Verma", position: "Sales Manager", state: "JHARKHAND" },
-    "KMJHR11R": { name: "Ravi Rashila", position: "Sales Manager", state: "JHARKHAND" }
-  };
-
-  function formatEmployeeDisplay(emp){
-    return emp.name + " (" + emp.position + ") - " + emp.state;
-  }
-
   // ---- IMPORTANT: paste your deployed Google Apps Script Web App URL here ----
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTNibxpkZwxw_DUjVcq4F7pPJuM9iV_BnEBu5rJKVPsQ_VpyT8jqwNQH15LrUG29p9/exec";
+
+  // ---- Employee ID -> name / position / state / sales lookup ----
+  // The employee list now lives in the "Employees" sheet tab and is
+  // fetched live from Code.gs — nothing to keep in sync here anymore.
 
   const employeeInput = document.getElementById('EmployeeId');
   const feedback = document.getElementById('EmployeeFeedback');
   const feedbackText = document.getElementById('EmployeeFeedbackText');
+
   let matchedEmployeeName = "";
+  let lookupTimer = null;
+  let lookupSeq = 0; // guards against an older, slower response landing after a newer one
+
+  function escapeHtml(s){
+    return String(s)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;');
+  }
+
+  function renderEmployeeFound(data){
+    let html =
+      '<div class="emp-summary">' +
+        escapeHtml(data.name) + ' (' + escapeHtml(data.position) + ') — ' + escapeHtml(data.state) +
+        ' <span class="emp-sales">· Sale — ' + data.totalSales + '</span>' +
+      '</div>';
+
+    if(data.members && data.members.length){
+      html += '<ul class="emp-members">';
+      data.members.forEach(function(m){
+        const label = m.position ? (m.name + ' — ' + m.position) : m.name;
+        html += '<li>' + escapeHtml(label) + '</li>';
+      });
+      html += '</ul>';
+    }
+
+    feedbackText.innerHTML = html;
+  }
 
   function checkEmployeeId(){
     const code = employeeInput.value.trim().toUpperCase();
+
+    clearTimeout(lookupTimer);
+
     if(!code){
       feedback.classList.remove('show','found','notfound');
       matchedEmployeeName = "";
       return;
     }
-    const emp = EMPLOYEES[code];
-    if(emp){
-      matchedEmployeeName = emp.name;
-      feedbackText.textContent = formatEmployeeDisplay(emp);
-      feedback.classList.add('show','found');
-      feedback.classList.remove('notfound');
-      employeeInput.classList.remove('invalid');
-    } else {
-      matchedEmployeeName = "";
-      feedbackText.textContent = "Code not recognized";
-      feedback.classList.add('show','notfound');
-      feedback.classList.remove('found');
-    }
+
+    const thisSeq = ++lookupSeq;
+
+    lookupTimer = setTimeout(function(){
+      fetch(SCRIPT_URL + "?action=lookup&code=" + encodeURIComponent(code))
+        .then(function(res){ return res.json(); })
+        .then(function(data){
+          if(thisSeq !== lookupSeq) return; // a newer keystroke already superseded this
+
+          if(data.found){
+            matchedEmployeeName = data.name;
+            renderEmployeeFound(data);
+            feedback.classList.add('show','found');
+            feedback.classList.remove('notfound');
+            employeeInput.classList.remove('invalid');
+          } else {
+            matchedEmployeeName = "";
+            feedbackText.textContent = "Code not recognized";
+            feedback.classList.add('show','notfound');
+            feedback.classList.remove('found');
+          }
+        })
+        .catch(function(){
+          if(thisSeq !== lookupSeq) return;
+          matchedEmployeeName = "";
+          feedbackText.textContent = "Couldn't verify code — check your connection";
+          feedback.classList.add('show','notfound');
+          feedback.classList.remove('found');
+        });
+    }, 300);
   }
   employeeInput.addEventListener('input', checkEmployeeId);
 
@@ -380,7 +387,6 @@
 
   // ---- Phone validation ----
   // Accepts: 10-digit starting 6-9, optionally prefixed with +91 / 91 / 0
-  const PHONE_RE = /^(?:\+91|91|0)?[6-9]\d{9}$/;
   function normalizePhone(value){
     const m = value.trim().replace(/[\s-]/g,'').match(/^(?:\+91|91|0)?([6-9]\d{9})$/);
     return m ? m[1] : null;
@@ -413,9 +419,11 @@ form.addEventListener('submit', function(e){
   const termsAccepted = document.getElementById('acceptTerms').checked;
 
 
-  // Employee ID
-  if(!EMPLOYEES[code]){
-    msg.textContent = "Please enter a valid Employee ID.";
+  // Employee ID — matchedEmployeeName is only set once the live lookup
+  // confirms the code, so this also catches "submitted before the
+  // 300ms lookup finished".
+  if(!code || !matchedEmployeeName){
+    msg.textContent = "Please enter a valid Employee ID and wait for it to be verified.";
     msg.classList.add('show','error');
     employeeInput.classList.add('invalid');
     return;
