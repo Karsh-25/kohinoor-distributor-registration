@@ -100,7 +100,7 @@
     color:var(--deep-green);
     margin-bottom:6px;
   }
-  .field input, .field select{
+  .field input, .field select, .field textarea{
     width:100%;
     padding:11px 13px;
     font-size:14.5px;
@@ -114,17 +114,22 @@
     appearance:none;
     -webkit-appearance:none;
   }
+  .field textarea{
+    resize:vertical;
+    min-height:64px;
+    line-height:1.4;
+  }
   .field select{
     background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9'><path d='M1 1l6 6 6-6' stroke='%23173A2C' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
     background-repeat:no-repeat;
     background-position:right 13px center;
     padding-right:34px;
   }
-  .field input:focus, .field select:focus{
+  .field input:focus, .field select:focus, .field textarea:focus{
     border-color:var(--gold);
     box-shadow:0 0 0 3px rgba(180,134,58,0.15);
   }
-  .field input.invalid, .field select.invalid{
+  .field input.invalid, .field select.invalid, .field textarea.invalid{
     border-color:var(--error);
   }
   .employee-feedback{
@@ -140,6 +145,7 @@
   .employee-feedback.show{display:flex;}
   .employee-feedback.found{color:var(--success);}
   .employee-feedback.notfound{color:var(--error);}
+  .employee-feedback.checking{color:#8A9483;}
   .employee-feedback .dot{
     width:6px;height:6px;border-radius:50%;
     background:currentColor;
@@ -247,6 +253,7 @@
           <option value="Sales Associate">Sales Associate</option>
           <option value="Branch Manager">Branch Manager</option>
           <option value="Distributor">Distributor</option>
+          <option value="Registered Medical Practitioner (RMP)">Registered Medical Practitioner (RMP)</option>
         </select>
       </div>
 
@@ -273,6 +280,11 @@
       <div class="field">
         <label for="email">Email</label>
         <input type="email" id="email" placeholder="Email id" required>
+      </div>
+
+      <div class="field">
+        <label for="address">Address</label>
+        <textarea id="address" rows="2" placeholder="Full Address" required></textarea>
       </div>
 
       <div class="row2">
@@ -304,16 +316,33 @@
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTNibxpkZwxw_DUjVcq4F7pPJuM9iV_BnEBu5rJKVPsQ_VpyT8jqwNQH15LrUG29p9/exec";
 
   // ---- Employee ID -> name / position / state / sales lookup ----
-  // The employee list now lives in the "Employees" sheet tab and is
-  // fetched live from Code.gs — nothing to keep in sync here anymore.
+  // The employee list lives in the "Employees" sheet tab and is
+  // fetched live from Code.gs — nothing to keep in sync here.
 
   const employeeInput = document.getElementById('EmployeeId');
   const feedback = document.getElementById('EmployeeFeedback');
   const feedbackText = document.getElementById('EmployeeFeedbackText');
 
+  // Real employee codes are always 7-9 chars (see CODE_CELL_RE in
+  // Code.gs), so there's no point hitting the server before the
+  // input even looks like a complete code — this avoids firing a
+  // lookup on every keystroke while someone is still mid-typing.
+  const MIN_LOOKUP_LENGTH = 6;
+  const LOOKUP_DEBOUNCE_MS = 220;
+
   let matchedEmployeeName = "";
   let lookupTimer = null;
   let lookupSeq = 0; // guards against an older, slower response landing after a newer one
+  let lookupInFlight = false;
+
+  // Kept in sync so the submit button reflects whether we're still
+  // waiting on a code check — this is what stops the confusing
+  // "I filled everything in but it silently never verified" case.
+  function updateSubmitAvailability(){
+    if(!submitBtn) return; // not declared yet during initial script load
+    submitBtn.disabled = lookupInFlight;
+    submitBtn.textContent = lookupInFlight ? "Verifying Employee ID…" : "Register";
+  }
 
   function escapeHtml(s){
     return String(s)
@@ -346,19 +375,38 @@
 
     clearTimeout(lookupTimer);
 
-    if(!code){
-      feedback.classList.remove('show','found','notfound');
+    // Bump the sequence immediately so any in-flight request from a
+    // previous (now-stale) value can never overwrite what happens next.
+    const mySeq = ++lookupSeq;
+
+    if(!code || code.length < MIN_LOOKUP_LENGTH){
+      // Too short to be a real code yet — don't hit the server on
+      // every single keystroke while the person is still typing.
+      feedback.classList.remove('show','found','notfound','checking');
       matchedEmployeeName = "";
+      lookupInFlight = false;
+      updateSubmitAvailability();
       return;
     }
 
-    const thisSeq = ++lookupSeq;
+    // Show a "Checking…" state right away so it's clear something is
+    // happening — this used to look like it silently stopped.
+    lookupInFlight = true;
+    updateSubmitAvailability();
+    matchedEmployeeName = "";
+    feedbackText.textContent = "Checking…";
+    feedback.classList.add('show','checking');
+    feedback.classList.remove('found','notfound');
 
     lookupTimer = setTimeout(function(){
       fetch(SCRIPT_URL + "?action=lookup&code=" + encodeURIComponent(code))
         .then(function(res){ return res.json(); })
         .then(function(data){
-          if(thisSeq !== lookupSeq) return; // a newer keystroke already superseded this
+          if(mySeq !== lookupSeq) return; // a newer keystroke already superseded this
+
+          lookupInFlight = false;
+          updateSubmitAvailability();
+          feedback.classList.remove('checking');
 
           if(data.found){
             matchedEmployeeName = data.name;
@@ -374,13 +422,16 @@
           }
         })
         .catch(function(){
-          if(thisSeq !== lookupSeq) return;
+          if(mySeq !== lookupSeq) return;
+          lookupInFlight = false;
+          updateSubmitAvailability();
+          feedback.classList.remove('checking');
           matchedEmployeeName = "";
           feedbackText.textContent = "Couldn't verify code — check your connection";
           feedback.classList.add('show','notfound');
           feedback.classList.remove('found');
         });
-    }, 300);
+    }, LOOKUP_DEBOUNCE_MS);
   }
   employeeInput.addEventListener('input', checkEmployeeId);
 
@@ -402,6 +453,7 @@
   const submitBtn = document.getElementById('submitBtn');
   const phoneInput = document.getElementById('phone');
   const jobPositionSelect = document.getElementById('jobPosition');
+  const addressInput = document.getElementById('address');
 
 form.addEventListener('submit', function(e){
   e.preventDefault();
@@ -410,6 +462,7 @@ form.addEventListener('submit', function(e){
   phoneInput.classList.remove('invalid');
   employeeInput.classList.remove('invalid');
   jobPositionSelect.classList.remove('invalid');
+  addressInput.classList.remove('invalid');
 
   const code = employeeInput.value.trim().toUpperCase();
   const jobPosition = jobPositionSelect.value;
@@ -418,6 +471,7 @@ form.addEventListener('submit', function(e){
   const phone = normalizePhone(phoneInput.value);
   const gender = document.getElementById('gender').value;
   const email = document.getElementById('email').value.trim();
+  const address = addressInput.value.trim();
   const password = document.getElementById('password').value;
   const confirmPassword = document.getElementById('confirmPassword').value;
   const termsAccepted = document.getElementById('acceptTerms').checked;
@@ -425,7 +479,7 @@ form.addEventListener('submit', function(e){
 
   // Employee ID — matchedEmployeeName is only set once the live lookup
   // confirms the code, so this also catches "submitted before the
-  // 300ms lookup finished".
+  // lookup finished".
   if(!code || !matchedEmployeeName){
     msg.textContent = "Please enter a valid Employee ID and wait for it to be verified.";
     msg.classList.add('show','error');
@@ -482,6 +536,15 @@ form.addEventListener('submit', function(e){
   }
 
 
+  // Address
+  if(!address){
+    msg.textContent = "Please enter your address.";
+    msg.classList.add('show','error');
+    addressInput.classList.add('invalid');
+    return;
+  }
+
+
   // Password
   if(!password){
     msg.textContent = "Please enter a password.";
@@ -527,6 +590,7 @@ form.addEventListener('submit', function(e){
     phone: phone,
     gender: gender,
     email: email,
+    address: address,
     password: password
   };
 
